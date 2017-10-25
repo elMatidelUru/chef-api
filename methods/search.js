@@ -32,21 +32,20 @@ exports.methods = function(config){
 					qs.rows=1000;
 					http_methods.post(URL , qs, data, function(err2, response2){
 						if(response2 && _.has(response, 'rows') && _.has(response2, 'rows') ) {
-							response.rows = response.rows.concat(response2.rows);
-							console.log(" Number of rows : " + response.rows.length);
+							var temparray = response.rows.concat(response2.rows);
+							response.rows = temparray;
 							return fn(err, response );
 						}else {
 							return fn(err, response );
 						}
 					});
 				}else if (err) {
-					return fn("Unknown stuff has happened", "");
+					return fn(err, response);
 				} else {
-					return fn("Unknown stuff has happened", "");
+					return fn(err, response);
 				}
 					
 				
-				return fn(err, response);
             });
         }
     }
