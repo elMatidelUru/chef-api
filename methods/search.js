@@ -21,8 +21,32 @@ exports.methods = function(config){
 
         // https://docs.chef.io/api_chef_server_search_index.html#post
         partialSearch: function(index, qs, data, fn){
-            http_methods.post([config.host_url, "search", index].join("/"), qs, data, function(err, response){
-                return fn(err, response);
+			var URL = [config.host_url, "search", index].join("/");
+			qs.start=0;
+			qs.rows=1000;
+						
+            http_methods.post(URL , qs, data, function(err, response){
+               
+				if (response) {
+					qs.start=1000;
+					qs.rows=1000;
+					http_methods.post(URL , qs, data, function(err2, response2){
+						if(response2 && _.has(response, 'rows') && _.has(response2, 'rows') ) {
+							response.rows = response.rows.concat(response2.rows);
+							console.log(" Number of rows : " + response.rows.length);
+							return fn(err, response );
+						}else {
+							return fn(err, response );
+						}
+					});
+				}else if (err) {
+					return fn("Unknown stuff has happened", "");
+				} else {
+					return fn("Unknown stuff has happened", "");
+				}
+					
+				
+				return fn(err, response);
             });
         }
     }
