@@ -24,21 +24,35 @@ exports.methods = function(config){
 			var URL = [config.host_url, "search", index].join("/");
 			qs.start=0;
 			qs.rows=1000;
+			var LIMIT=0;
 						
             http_methods.post(URL , qs, data, function(err, response){
-               
-				if (response) {
-					qs.start=1000;
-					qs.rows=1000;
-					http_methods.post(URL , qs, data, function(err2, response2){
-						if(response2 && _.has(response, 'rows') && _.has(response2, 'rows') ) {
-							var temparray = response.rows.concat(response2.rows);
-							response.rows = temparray;
-							return fn(err, response );
-						}else {
-							return fn(err, response );
+               var total_response = "";
+				
+				if (response && _.has(response, 'total') ) {
+					
+					if (response.total > 1000 ) {
+						total_response = response; 
+						LIMIT = Math.ceil( response.total / 1000 );
+						
+						for(var i = 1; i < LIMIT; i++) {
+								qs.start=qs.start + 1000;
+								qs.rows=1000;
+								
+								http_methods.post(URL , qs, data, function(err2, response2){
+									if(response2 && _.has(response, 'rows') && _.has(response2, 'rows') ) {
+										
+										var temparray =  total_response.rows.concat(response2.rows);
+										total_response.rows = temparray;
+										return fn(err, total_response );
+									}else {
+										return fn(err, total_response );
+									}
+								});
 						}
-					});
+					}else {
+						return fn(err, response);
+					}
 				}else if (err) {
 					return fn(err, response);
 				} else {
