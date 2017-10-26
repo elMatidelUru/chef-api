@@ -34,19 +34,22 @@ exports.methods = function(config){
 					if (response.total > 1000 ) {
 						total_response = response; 
 						LIMIT = Math.ceil( response.total / 1000 );
-						
+						var respond_or_not = LIMIT;
 						for(var i = 1; i < LIMIT; i++) {
 								qs.start=qs.start + 1000;
 								qs.rows=1000;
 								
 								http_methods.post(URL , qs, data, function(err2, response2){
+									respond_or_not--;
 									if(response2 && _.has(response, 'rows') && _.has(response2, 'rows') ) {
 										
 										var temparray =  total_response.rows.concat(response2.rows);
 										total_response.rows = temparray;
-										return fn(err, total_response );
+										if( respond_or_not == 1 )
+											return fn(err, total_response );
 									}else {
-										return fn(err, total_response );
+										if( respond_or_not == 1 )
+											return fn(err, total_response );
 									}
 								});
 						}
